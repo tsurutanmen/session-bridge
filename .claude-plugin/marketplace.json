@@ -4,7 +4,7 @@
   "plugins": [
     {
       "name": "session-bridge",
-      "source": "./plugin",
+      "source": "./",
       "description": "Talk to your Claude Code sessions from other sessions, your voice, or any local program. Meetings between two sessions, and a talk button that reads replies aloud."
     }
   ]
