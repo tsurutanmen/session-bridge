@@ -2,7 +2,7 @@
 
 A Claude Code mod that lets you talk to your open Claude Code sessions from somewhere else: from another session, from your voice, or from any program on the same PC. Two sessions can also hold a meeting with you.
 
-The commands and messages are in Japanese. Tested on Windows 11 with Claude Code 2.1.286 (the version with function-hook plugins, "mods").
+The commands and messages are in Japanese. Tested on Windows 11 with Claude Code 2.1.286 to 2.1.288 (the version with function-hook plugins, "mods").
 
 ## What it does
 
@@ -33,6 +33,14 @@ In Claude Code:
 ```
 
 Sessions without a screen (`claude -p`, scheduled runs) get no inbox, so automated jobs are never interrupted.
+
+## What it does on your PC
+
+- **Reads and writes** JSON files under `~/.claude/session-dash/` only (the layout is below). Nothing else on disk.
+- **Runs nothing.** The mod starts no processes. `bridge.py` is a separate script you run yourself.
+- **Opens no network connection** and listens on no port. Messages travel as files on this PC.
+- **Submits prompts** into the session it runs in, but only for messages found in that session's inbox, framed as 「〇〇からの伝言」.
+- **Refuses tools** while it answers a read-only message: everything except Read, Glob, Grep, LS, ToolSearch and TodoWrite.
 
 ## Safety: read this first
 
