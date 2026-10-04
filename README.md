@@ -28,6 +28,13 @@ python bridge.py send ぽーたる "テストは通った？" --from 声 --wait 
 In Claude Code:
 
 ```
+/plugin marketplace add tsurutanmen/claude-plugins
+/plugin install session-bridge@tsurutalab
+```
+
+Or from this repository alone:
+
+```
 /plugin marketplace add tsurutanmen/session-bridge
 /plugin install session-bridge@session-bridge
 ```
@@ -74,7 +81,7 @@ import bridge
 bridge.post({"id": item["session"]}, heard_text, frm="声（本人）", mode="do", kind="voice")
 ```
 
-The author's listener uses Vosk for recognition and VOICEVOX for speech. It isn't published yet.
+The author's listener, [claude-desk](https://github.com/tsurutanmen/claude-desk), uses Vosk for recognition and VOICEVOX for speech. Meetings ask it for voice 3 for the session that opened the meeting and voice 2 for the other, which in VOICEVOX are VOICEVOX:ずんだもん and VOICEVOX:四国めたん. If you publish or share audio made with them, credit the characters that way and follow each character's terms.
 
 ## Related
 
