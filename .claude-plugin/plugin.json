@@ -1,6 +1,6 @@
 {
   "name": "session-bridge",
-  "version": "0.5.3",
+  "version": "0.5.5",
   "description": "Talk to your Claude Code sessions from other sessions, your voice, or any local program. Meetings between two sessions, and a talk button that reads replies aloud.",
   "author": {
     "name": "tsurutanmen"

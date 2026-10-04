@@ -10,7 +10,7 @@ import type { Register } from 'claude-code'
 // 例外は会話ボタンの声（kind=voice）：画面の前の本人がしゃべった言葉なので、本人の言葉として入れる。
 // 読み上げは ~/.claude/session-dash/speak/ に置き、声の聞き役（別のプログラム）が読む。
 
-type Peer = { id: string; name: string; cwd: string; prompt: string; busy: boolean; at: number; isEnded: boolean }
+type Peer = { id: string; name: string; cwd: string; prompt: string; busy: boolean; at: number; isEnded: boolean; interactive?: boolean }
 type Letter = {
   id: string; from: string; text: string; at: number
   mode?: 'ask' | 'do'
@@ -43,6 +43,7 @@ const S = {
   listenerAt: 0, // 声の聞き役が最後に生きていた時刻（wake.alive）
   meeting: null as Meeting | null,
   lastUser: '', // 本人が最後に言ったこと（会議で相手に回す）
+  live: false, // 画面につながって受け箱が動き出したか
   owner: '持ち主', // 会議での持ち主の呼び名（config.json の owner）
 }
 
@@ -85,8 +86,6 @@ function frame(l: Letter, m: Meeting | null, selfId: string, owner: string) {
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const ran = await next(e)
-    // 画面の無い実行（claude -p・予定の仕事）には受け箱を作らない。自動の仕事に伝言を割り込ませない
-    if ((await $.session.surfaces()).length === 0) return ran
     const home = ((await $.env.get('USERPROFILE')) ?? (await $.env.get('HOME')) ?? '').replace(/\\/g, '/')
     if (!home) return ran
     S.dir = `${home}/.claude/session-dash/bridge`
@@ -95,7 +94,7 @@ export const register: Register = on => {
     try {
       name = (JSON.parse(await $.fs.read(`${S.dir}/sessions/${id}.json`)) as Peer).name || '' // 前に付けた名前を引き継ぐ
     } catch {}
-    S.self = { id, name, cwd: await $.session.cwd(), prompt: '', busy: false, at: await $.clock.now(), isEnded: false }
+    S.self = { id, name, cwd: await $.session.cwd(), prompt: '', busy: false, at: await $.clock.now(), isEnded: false, interactive: e.isInteractive }
     try {
       S.owner = (JSON.parse(await $.fs.read(`${S.dir}/config.json`)) as { owner?: string }).owner || S.owner
     } catch {}
@@ -108,6 +107,9 @@ export const register: Register = on => {
 
     // 3秒ごと：自分の札を書き、ほかのセッション・返事・会議を読み、届いた伝言があれば入れる
     const tick = async () => {
+      // 画面に映っているかでは分けない（アプリで別のセッションを見ている間や、スマホから使っている間は「映っていない」になり、
+      // 伝言箱が止まってしまった）。どのセッションでも動く。画面の無い実行かどうかは札の interactive に残すだけ
+      S.live = true
       const now = await $.clock.now()
       const base = S.dir.replace(/\/bridge$/, '')
       S.self.at = now
@@ -393,7 +395,7 @@ export const register: Register = on => {
   })
 
   on('session.end', async ($, e, next) => {
-    if (S.dir && S.self.id) {
+    if (S.live && S.dir && S.self.id) {
       S.self.isEnded = true
       await $.fs.write(`${S.dir}/sessions/${S.self.id}.json`, JSON.stringify(S.self))
     }
