@@ -246,7 +246,11 @@ export const register: Register = on => {
   })
 
   on('prompt.submit', async ($, e, next) => {
-    const byPerson = !e.origin || e.origin.kind !== 'plugin' || (e.origin as { asUser?: boolean }).asUser === true
+    // 本人の言葉だけを数える：打った（composer）・スマホやブラウザから（bridge）・デスクトップのアプリ（sdk）・会話ボタンの声（plugin の asUser）。
+    // ほかのセッションからの伝言（peer）・裏の作業の知らせ・予定の仕事は、本人の言葉ではない
+    const kind = e.origin?.kind
+    const byPerson = !e.origin || kind === 'composer' || kind === 'bridge' || kind === 'sdk' ||
+      (kind === 'plugin' && (e.origin as { asUser?: boolean }).asUser === true)
     if (byPerson) {
       S.self.prompt = short(e.text, 60)
       S.lastUser = e.text
